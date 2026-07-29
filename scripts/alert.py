@@ -16,6 +16,13 @@ PREV_FILE = os.path.join(DATA_DIR, "previous.jsonl")
 
 DISCORD_CHANNEL_ID = "1526403743300714579"
 
+REGION_INCLUDE = {"서울", "경기", "수도권"}
+REGION_EXCLUDE = {
+    "부산", "대구", "인천", "광주", "대전", "울산", "세종",
+    "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주",
+    "충청북", "충청남", "전라북", "전라남", "경상북", "경상남",
+}
+
 sys.path.insert(0, SCRIPT_DIR)
 from scanner import scan_kstartup, scan_bizinfo, scan_mss, scan_kised, scan_kotra, scan_sbiz24, _make_session
 
@@ -64,6 +71,19 @@ def send_discord(message, token=None):
     except Exception as e:
         print(f"[alert] Discord 전송 실패: {e}", file=sys.stderr)
         return False
+
+
+def _matches_region(item):
+    """서울/경기/수도권 대상 공고만 통과시킨다.
+    지역 언급이 없으면 전국 대상으로 간주하여 포함."""
+    text = f"{item.get('title', '')} {item.get('org', '')} {item.get('category', '')} {item.get('program', '')}"
+    has_include = any(r in text for r in REGION_INCLUDE)
+    has_exclude = any(r in text for r in REGION_EXCLUDE)
+    if has_include:
+        return True
+    if has_exclude:
+        return False
+    return True
 
 
 def format_item(item):
@@ -121,7 +141,15 @@ def main():
         print("[alert] 신규 공고 없음", file=sys.stderr)
         return
 
-    print(f"[alert] 신규 {len(new_items)}건 발견!", file=sys.stderr)
+    filtered = [it for it in new_items if _matches_region(it)]
+    skipped = len(new_items) - len(filtered)
+    print(f"[alert] 신규 {len(new_items)}건 중 서울/경기권 {len(filtered)}건 (타 지역 {skipped}건 제외)", file=sys.stderr)
+
+    if not filtered:
+        print("[alert] 서울/경기권 해당 신규 공고 없음", file=sys.stderr)
+        return
+
+    new_items = filtered
 
     token = _load_discord_token()
     header = f"🔔 **정부 지원사업 신규 공고 {len(new_items)}건**\n{'─' * 30}"
