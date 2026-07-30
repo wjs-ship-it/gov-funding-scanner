@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>지원사업 알리미 — 서울·경기 맞춤 공고</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1>지원사업 알리미</h1>
+  <p class="subtitle">서울·경기권 정부 지원사업을 내 사업에 맞게</p>
+</header>
+
+<main>
+  <section class="profile-section" id="profileSection">
+    <h2>내 사업 프로필</h2>
+    <p class="profile-desc">입력하면 적격 여부를 자동 판별합니다. 브라우저에만 저장됩니다.</p>
+    <div class="profile-grid">
+      <label>
+        <span>업종</span>
+        <select id="bizType">
+          <option value="">선택</option>
+          <option value="제조">제조업</option>
+          <option value="서비스">서비스업</option>
+          <option value="IT">IT/소프트웨어</option>
+          <option value="유통">유통/판매</option>
+          <option value="요식">요식/외식</option>
+          <option value="뷰티">뷰티/패션</option>
+          <option value="교육">교육</option>
+          <option value="기타">기타</option>
+        </select>
+      </label>
+      <label>
+        <span>지역</span>
+        <select id="bizRegion">
+          <option value="서울">서울</option>
+          <option value="경기">경기</option>
+        </select>
+      </label>
+      <label>
+        <span>연매출</span>
+        <select id="bizRevenue">
+          <option value="">선택</option>
+          <option value="pre">매출 없음 (예비창업)</option>
+          <option value="u1">1억 미만</option>
+          <option value="u5">1~5억</option>
+          <option value="u10">5~10억</option>
+          <option value="o10">10억 이상</option>
+        </select>
+      </label>
+      <label>
+        <span>업력</span>
+        <select id="bizAge">
+          <option value="">선택</option>
+          <option value="pre">예비창업</option>
+          <option value="u1">1년 미만</option>
+          <option value="u3">1~3년</option>
+          <option value="u7">3~7년</option>
+          <option value="o7">7년 이상</option>
+        </select>
+      </label>
+      <label>
+        <span>종업원 수</span>
+        <select id="bizEmployees">
+          <option value="">선택</option>
+          <option value="1">1인 (대표만)</option>
+          <option value="u5">2~5명</option>
+          <option value="u10">6~10명</option>
+          <option value="o10">10명 이상</option>
+        </select>
+      </label>
+    </div>
+    <div class="profile-actions">
+      <button id="saveProfile" class="btn-primary">저장 & 필터 적용</button>
+      <button id="resetProfile" class="btn-secondary">초기화</button>
+    </div>
+  </section>
+
+  <section class="filter-bar">
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="공고명, 기관명으로 검색...">
+    </div>
+    <div class="filter-chips">
+      <button class="chip active" data-source="all">전체</button>
+      <button class="chip" data-source="kstartup">K-Startup</button>
+      <button class="chip" data-source="bizinfo">기업마당</button>
+      <button class="chip" data-source="mss">중기부</button>
+      <button class="chip" data-source="kotra">KOTRA</button>
+      <button class="chip" data-source="sbiz24">판판대로</button>
+      <button class="chip" data-source="kised">창업진흥원</button>
+    </div>
+    <div class="stats" id="stats"></div>
+  </section>
+
+  <section class="grants-list" id="grantsList"></section>
+</main>
+
+<footer>
+  <p>데이터 갱신: <span id="updated">-</span> · 6개 기관 자동 수집 · 서울/경기권 필터 적용</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
