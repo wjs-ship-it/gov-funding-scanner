@@ -61,7 +61,6 @@ OTHER_REGIONS = ["부산", "대구", "광주", "대전", "울산", "세종", "�
 SOURCE_NAMES = {
     "kstartup": "K-Startup",
     "bizinfo": "기업마당",
-    "mss": "중소벤처기업부",
     "kised": "창업진흥원",
     "kotra": "KOTRA",
     "sbiz24": "판판대로",

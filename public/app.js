@@ -6,7 +6,6 @@
   const SOURCE_LABELS = {
     kstartup: "K-Startup",
     bizinfo: "기업마당",
-    mss: "중기부",
     kised: "창업진흥원",
     kotra: "KOTRA",
     sbiz24: "판판대로",

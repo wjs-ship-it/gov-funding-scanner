@@ -24,7 +24,7 @@ REGION_EXCLUDE = {
 }
 
 sys.path.insert(0, SCRIPT_DIR)
-from scanner import scan_kstartup, scan_bizinfo, scan_mss, scan_kised, scan_kotra, scan_sbiz24, _make_session
+from scanner import scan_kstartup, scan_bizinfo, scan_kised, scan_kotra, scan_sbiz24, _make_session
 
 
 def load_previous_ids():
@@ -90,7 +90,6 @@ def format_item(item):
     source_names = {
         "kstartup": "K-Startup",
         "bizinfo": "기업마당",
-        "mss": "중소벤처기업부",
         "kised": "창업진흥원",
         "kotra": "KOTRA",
         "sbiz24": "판판대로",
@@ -118,7 +117,6 @@ def main():
     items = []
     items.extend(scan_kstartup(fetch, max_pages=30))
     items.extend(scan_bizinfo(fetch, max_pages=15))
-    items.extend(scan_mss(fetch, max_pages=5))
     items.extend(scan_kised(fetch, max_pages=5))
     items.extend(scan_kotra(fetch, max_pages=5))
     items.extend(scan_sbiz24(max_pages=10))

@@ -20,7 +20,6 @@ import time
 
 KSTARTUP_BASE = "https://www.k-startup.go.kr/web/contents/bizpbanc-ongoing.do"
 BIZINFO_BASE = "https://www.bizinfo.go.kr/web/lay1/bbs/S1T122C128/AS/74/list.do"
-MSS_BASE = "https://www.mss.go.kr/site/smba/ex/bbs/List.do"
 KISED_BASE = "https://www.kised.or.kr/board.es"
 KOTRA_BASE = "https://www.kotra.or.kr"
 DELAY = 0.4  # 서버 부담 줄이려고 요청 사이에 쉬는 시간(초)
@@ -230,72 +229,6 @@ def scan_bizinfo(fetch, max_pages=15):
     return all_items
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# 중소벤처기업부 크롤러
-# <tbody> 안의 <tr> 행 파싱. td 순서: 번호, 제목, 담당부서, 첨부, 등록일, 조회
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-def _parse_mss_list(html):
-    items = []
-    tbody_m = re.search(r"<tbody>(.*?)</tbody>", html, re.DOTALL)
-    if not tbody_m:
-        return items
-    rows = re.findall(r"<tr[^>]*>(.*?)</tr>", tbody_m.group(1), re.DOTALL)
-    for row in rows:
-        tds = re.findall(r"<td[^>]*>(.*?)</td>", row, re.DOTALL)
-        if len(tds) < 5:
-            continue
-        seq = _strip(re.sub(r"<[^>]+>", "", tds[0]))
-        if not seq.isdigit():
-            continue
-        title = _strip(re.sub(r"<[^>]+>", "", tds[1]))
-        title = htmllib.unescape(title)
-        dept = _strip(re.sub(r"<[^>]+>", "", tds[2]))
-        date = _strip(re.sub(r"<[^>]+>", "", tds[4]))
-        date = date.replace(".", "-") if date else ""
-
-        links = re.findall(r"bcIdx=(\d+)", row)
-        bc_idx = links[0] if links else seq
-        url = f"https://www.mss.go.kr/site/smba/ex/bbs/View.do?cbIdx=86&bcIdx={bc_idx}"
-
-        items.append({
-            "source": "mss",
-            "id": seq,
-            "category": "",
-            "dday": "",
-            "title": title,
-            "program": "",
-            "org": f"중소벤처기업부 {dept}",
-            "start": "",
-            "deadline": "",
-            "url": url,
-        })
-    return items
-
-
-def scan_mss(fetch, max_pages=5):
-    all_items = []
-    seen_ids = set()
-    for page in range(1, max_pages + 1):
-        url = f"{MSS_BASE}?cbIdx=86&pageIndex={page}"
-        status, html = fetch(url)
-        if status != 200:
-            print(f"  [mss] page {page}: HTTP {status} — 중단", file=sys.stderr)
-            break
-        items = _parse_mss_list(html)
-        if not items:
-            break
-        new = 0
-        for it in items:
-            if it["id"] not in seen_ids:
-                seen_ids.add(it["id"])
-                all_items.append(it)
-                new += 1
-        print(f"  [mss] page {page}: {new}건 수집 (누적 {len(all_items)})", file=sys.stderr)
-        if new == 0:
-            break
-        time.sleep(DELAY)
-    return all_items
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -657,10 +590,6 @@ def main():
     p_biz.add_argument("-o", "--output", default="bizinfo.jsonl")
     p_biz.add_argument("--max-pages", type=int, default=15)
 
-    p_mss = sub.add_parser("mss", help="중소벤처기업부 공고 수집")
-    p_mss.add_argument("-o", "--output", default="mss.jsonl")
-    p_mss.add_argument("--max-pages", type=int, default=5)
-
     p_kised = sub.add_parser("kised", help="창업진흥원 보도자료 수집")
     p_kised.add_argument("-o", "--output", default="kised.jsonl")
     p_kised.add_argument("--max-pages", type=int, default=5)
@@ -689,14 +618,12 @@ def main():
     fetch, backend = _make_session()
     print(f"[scanner] backend: {backend}", file=sys.stderr)
 
-    if args.cmd in ("kstartup", "bizinfo", "mss", "kised", "kotra", "sbiz24", "all"):
+    if args.cmd in ("kstartup", "bizinfo", "kised", "kotra", "sbiz24", "all"):
         items = []
         if args.cmd in ("kstartup", "all"):
             items.extend(scan_kstartup(fetch, args.max_pages))
         if args.cmd in ("bizinfo", "all"):
             items.extend(scan_bizinfo(fetch, args.max_pages))
-        if args.cmd in ("mss", "all"):
-            items.extend(scan_mss(fetch, getattr(args, "max_pages", 5)))
         if args.cmd in ("kised", "all"):
             items.extend(scan_kised(fetch, getattr(args, "max_pages", 5)))
         if args.cmd in ("kotra", "all"):
