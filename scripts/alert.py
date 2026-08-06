@@ -23,6 +23,12 @@ REGION_EXCLUDE = {
     "충청북", "충청남", "전라북", "전라남", "경상북", "경상남",
 }
 
+INDUSTRY_KEYWORDS = {
+    "화장품", "향수", "뷰티", "K-뷰티", "K뷰티", "코스메틱", "cosmetic",
+    "제조", "제조업", "소상공인", "소공인", "1인", "브랜드", "수출",
+    "마케팅", "판로", "온라인", "창업", "스타트업",
+}
+
 sys.path.insert(0, SCRIPT_DIR)
 from scanner import scan_kstartup, scan_bizinfo, scan_kised, scan_kotra, scan_sbiz24, _make_session
 
@@ -86,6 +92,13 @@ def _matches_region(item):
     return True
 
 
+def _matches_industry(item):
+    """르브아제(향수/화장품 1인 제조기업) 관련 공고만 통과시킨다.
+    업종 키워드가 하나라도 포함되면 통과."""
+    text = f"{item.get('title', '')} {item.get('org', '')} {item.get('category', '')} {item.get('program', '')}"
+    return any(kw in text for kw in INDUSTRY_KEYWORDS)
+
+
 def format_item(item):
     source_names = {
         "kstartup": "K-Startup",
@@ -139,9 +152,11 @@ def main():
         print("[alert] 신규 공고 없음", file=sys.stderr)
         return
 
-    filtered = [it for it in new_items if _matches_region(it)]
-    skipped = len(new_items) - len(filtered)
-    print(f"[alert] 신규 {len(new_items)}건 중 서울/경기권 {len(filtered)}건 (타 지역 {skipped}건 제외)", file=sys.stderr)
+    region_filtered = [it for it in new_items if _matches_region(it)]
+    filtered = [it for it in region_filtered if _matches_industry(it)]
+    skipped_region = len(new_items) - len(region_filtered)
+    skipped_industry = len(region_filtered) - len(filtered)
+    print(f"[alert] 신규 {len(new_items)}건 → 지역필터 {len(region_filtered)}건 → 업종필터 {len(filtered)}건 (지역제외 {skipped_region}, 업종제외 {skipped_industry})", file=sys.stderr)
 
     if not filtered:
         print("[alert] 서울/경기권 해당 신규 공고 없음", file=sys.stderr)
